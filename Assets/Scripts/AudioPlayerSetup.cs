@@ -20,9 +20,13 @@ public class AudioPlayerSetup : MonoBehaviour
     public Vector3 spawnPosition = Vector3.zero;
     
     [Space(10)]
-    [Header("预设参数")]
+    [Header("移动预设参数")]
     public float moveSpeed = 5f;
-    public float scaleSensitivity = 2f;
+    public float jumpForce = 12f;
+    public float gravity = 25f;
+    
+    [Header("音频预设参数")]
+    public float scaleSensitivity = 200f;  // 修改默认值为200
     public float minScale = 0.5f;
     public float maxScale = 3f;
     
@@ -60,14 +64,13 @@ public class AudioPlayerSetup : MonoBehaviour
         player.transform.position = spawnPosition;
         player.transform.localScale = new Vector3(playerSize.x, playerSize.y, 1f);
         
-        // 添加AudioControlledPlayer脚本
+        // 添加AudioControlledPlayer脚本（它会自动添加PlayerController和AudioController）
         AudioControlledPlayer audioController = player.AddComponent<AudioControlledPlayer>();
         
-        // 设置预设参数
-        audioController.moveSpeed = moveSpeed;
-        audioController.scaleSensitivity = scaleSensitivity;
-        audioController.minScale = minScale;
-        audioController.maxScale = maxScale;
+        // 等待组件自动设置完成，然后配置预设参数
+        audioController.SetMoveSpeed(moveSpeed);
+        audioController.SetJumpForce(jumpForce);
+        audioController.SetScaleSensitivity(scaleSensitivity);
         
         // 添加Collider2D（可选）
         player.AddComponent<BoxCollider2D>();
@@ -122,6 +125,50 @@ public class AudioPlayerSetup : MonoBehaviour
     }
     
     /// <summary>
+    /// 创建简单的地面平台
+    /// </summary>
+    public void CreateSimpleGround()
+    {
+        // 创建地面对象
+        GameObject ground = new GameObject("Ground");
+        
+        // 添加SpriteRenderer
+        SpriteRenderer groundRenderer = ground.AddComponent<SpriteRenderer>();
+        groundRenderer.sprite = CreateGroundSprite();
+        groundRenderer.color = new Color(0.5f, 0.3f, 0.1f); // 棕色
+        
+        // 设置位置和大小
+        ground.transform.position = new Vector3(0, -3f, 0);
+        ground.transform.localScale = new Vector3(10f, 1f, 1f);
+        
+        // 添加碰撞器
+        BoxCollider2D groundCollider = ground.AddComponent<BoxCollider2D>();
+        
+        Debug.Log("已创建地面平台：" + ground.name);
+    }
+    
+    /// <summary>
+    /// 创建地面精灵
+    /// </summary>
+    private Sprite CreateGroundSprite()
+    {
+        // 创建一个简单的棕色矩形纹理
+        Texture2D texture = new Texture2D(64, 32);
+        Color[] pixels = new Color[64 * 32];
+        
+        for (int i = 0; i < pixels.Length; i++)
+        {
+            pixels[i] = Color.white;
+        }
+        
+        texture.SetPixels(pixels);
+        texture.Apply();
+        
+        // 创建精灵
+        return Sprite.Create(texture, new Rect(0, 0, 64, 32), Vector2.one * 0.5f);
+    }
+    
+    /// <summary>
     /// 设置摄像机为2D模式
     /// </summary>
     public void Setup2DCamera()
@@ -158,8 +205,11 @@ public class AudioPlayerSetup : MonoBehaviour
         UnityEditor.Selection.activeGameObject = player;
         #endif
         
+        // 创建一个简单的地面平台
+        CreateSimpleGround();
+        
         Debug.Log("场景设置完成！可以开始游戏了。");
-        Debug.Log("控制说明：WASD移动，对着麦克风说话控制缩放");
+        Debug.Log("控制说明：A/D移动，空格跳跃，对着麦克风说话控制缩放");
     }
 }
 
@@ -178,12 +228,13 @@ public class AudioPlayerSetupEditor : Editor
         if (setup.showInstructions)
         {
             EditorGUILayout.HelpBox(
-                "这个脚本帮助你快速设置音频控制的2D游戏对象。\n\n" +
+                "这个脚本帮助你快速设置音频控制的2D游戏对象（马里奥式跳跃）。\n\n" +
                 "步骤：\n" +
                 "1. 可选：拖拽一个精灵到Player Sprite字段\n" +
-                "2. 调整其他设置（可选）\n" +
+                "2. 调整移动和音频设置（可选）\n" +
                 "3. 点击下方的按钮创建对象\n" +
-                "4. 运行游戏，使用WASD移动，对着麦克风说话控制缩放",
+                "4. 创建地面平台（添加带Collider2D的GameObject）\n" +
+                "5. 运行游戏：A/D移动，空格跳跃，对着麦克风说话控制缩放",
                 MessageType.Info
             );
         }
@@ -207,6 +258,11 @@ public class AudioPlayerSetupEditor : Editor
         if (GUILayout.Button("仅设置2D摄像机", GUILayout.Height(25)))
         {
             setup.Setup2DCamera();
+        }
+        
+        if (GUILayout.Button("创建地面平台", GUILayout.Height(25)))
+        {
+            setup.CreateSimpleGround();
         }
         
         EditorGUILayout.Space();
