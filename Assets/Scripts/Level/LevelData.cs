@@ -112,10 +112,26 @@ namespace SayBoom.Level
         
         public void Initialize()
         {
-            // 确保有碰撞器
-            if (GetComponent<Collider>() == null && GetComponent<Collider2D>() == null)
+            // 确保有2D碰撞器（移除3D碰撞器如果存在）
+            var collider3D = GetComponent<Collider>();
+            if (collider3D != null)
+            {
+                DestroyImmediate(collider3D);
+            }
+            
+            if (GetComponent<Collider2D>() == null)
             {
                 gameObject.AddComponent<BoxCollider2D>();
+            }
+            
+            // 确保在Ground层
+            if (gameObject.layer == 0) // 如果在Default层
+            {
+                int groundLayer = LayerMask.NameToLayer("Ground");
+                if (groundLayer != -1)
+                {
+                    gameObject.layer = groundLayer;
+                }
             }
         }
         
