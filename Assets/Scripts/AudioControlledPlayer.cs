@@ -19,6 +19,11 @@ public class AudioControlledPlayer : MonoBehaviour
     
     [Tooltip("如果为true，将自动添加必要的物理组件")]
     public bool autoSetupPhysics = true;
+
+    public Rigidbody2D rigidbody;
+
+    [Header("物体重力")]
+    public float gravity;
     
     void Awake()
     {
@@ -82,7 +87,7 @@ public class AudioControlledPlayer : MonoBehaviour
             Debug.Log("已自动添加BoxCollider2D组件");
         }
     }
-    
+
     /// <summary>
     /// 验证组件是否正确设置
     /// </summary>
@@ -92,27 +97,30 @@ public class AudioControlledPlayer : MonoBehaviour
         {
             Debug.LogWarning("PlayerController组件未找到！玩家将无法移动。");
         }
-        
+
         if (audioController == null)
         {
             Debug.LogWarning("AudioController组件未找到！音频响应将不工作。");
         }
-        
+
         // 验证物理组件
         if (GetComponent<Rigidbody2D>() == null)
         {
             Debug.LogWarning("Rigidbody2D组件未找到！跳跃系统可能无法正常工作。");
         }
-        
+
         if (GetComponent<Collider2D>() == null)
         {
             Debug.LogWarning("Collider2D组件未找到！碰撞检测可能无法正常工作。");
         }
-        
+
         if (playerController != null && audioController != null)
         {
             Debug.Log("音频控制玩家初始化完成！可以使用A/D移动，空格跳跃，对着麦克风说话控制缩放。");
         }
+
+        rigidbody = transform.GetComponent<Rigidbody2D>();
+        rigidbody.gravityScale = gravity;
     }
     
     // ===================

@@ -74,6 +74,7 @@ public class AudioPlayerSetup : MonoBehaviour
         
         // 添加Collider2D（可选）
         player.AddComponent<BoxCollider2D>();
+
         
         Debug.Log("已创建音频控制玩家对象：" + player.name);
         

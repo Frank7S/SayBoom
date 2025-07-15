@@ -51,14 +51,14 @@ public class PlayerController : MonoBehaviour
         
         // 设置Rigidbody2D参数
         rb.freezeRotation = true;  // 防止旋转
-        rb.gravityScale = 0;       // 使用自定义重力
+        // rb.gravityScale = 0;       // 使用自定义重力
         
         // 如果没有地面检测点，创建一个
         if (groundCheck == null)
         {
             GameObject groundCheckObj = new GameObject("GroundCheck");
             groundCheckObj.transform.SetParent(transform);
-            groundCheckObj.transform.localPosition = new Vector3(0, -0.5f, 0);
+            // groundCheckObj.transform.localPosition = new Vector3(0, -0.5f, 0);
             groundCheck = groundCheckObj.transform;
         }
     }
