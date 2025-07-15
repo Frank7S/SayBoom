@@ -30,11 +30,16 @@ namespace SayBoom.Movement
         
         [Space(10)]
         [Header("跳跃手感配置")]
-        [Tooltip("跳跃初始力度")]
-        public float jumpForce = 12f;
+        [Tooltip("跳跃高度（Unity单位）- 策划可直观调整")]
+        public float jumpHeight = 3f;
         
         [Tooltip("重力强度")]
         public float gravity = 25f;
+        
+        [Space(5)]
+        [Header("计算得出的参数")]
+        [Tooltip("自动计算的跳跃力度")]
+        [SerializeField] private float calculatedJumpForce = 12f;
         
         [Tooltip("最大下落速度")]
         public float maxFallSpeed = 20f;
@@ -58,8 +63,35 @@ namespace SayBoom.Movement
         [Tooltip("地面检测半径")]
         public float groundCheckRadius = 0.2f;
         
-        [Tooltip("地面图层")]
-        public LayerMask groundLayerMask = 1;
+        [Tooltip("地面图层 - 支持Default、Ground、Tilemap等层")]
+        public LayerMask groundLayerMask = -1;
+        
+        /// <summary>
+        /// 获取计算后的跳跃力度
+        /// </summary>
+        public float JumpForce => calculatedJumpForce;
+        
+        /// <summary>
+        /// 根据跳跃高度和重力计算跳跃力度
+        /// 使用物理公式：v = sqrt(2 * g * h)
+        /// </summary>
+        public void CalculateJumpForce()
+        {
+            calculatedJumpForce = Mathf.Sqrt(2f * gravity * jumpHeight);
+            
+            #if UNITY_EDITOR
+            // 在编辑器中自动刷新显示
+            UnityEditor.EditorUtility.SetDirty(this);
+            #endif
+        }
+        
+        /// <summary>
+        /// Unity编辑器中值改变时自动重新计算
+        /// </summary>
+        void OnValidate()
+        {
+            CalculateJumpForce();
+        }
         
         /// <summary>
         /// 应用配置到移动系统
@@ -68,8 +100,11 @@ namespace SayBoom.Movement
         {
             if (movementSystem == null) return;
             
+            // 应用配置前先计算跳跃力度
+            CalculateJumpForce();
+            
             movementSystem.MoveSpeed = moveSpeed;
-            movementSystem.JumpForce = jumpForce;
+            movementSystem.JumpForce = JumpForce;  // 使用计算后的跳跃力度
             movementSystem.Gravity = gravity;
             
             Debug.Log($"已应用移动配置: {name}");
@@ -83,8 +118,12 @@ namespace SayBoom.Movement
             if (movementSystem == null) return;
             
             moveSpeed = movementSystem.MoveSpeed;
-            jumpForce = movementSystem.JumpForce;
+            // 反向计算跳跃高度：h = v² / (2 * g)
+            jumpHeight = (movementSystem.JumpForce * movementSystem.JumpForce) / (2f * movementSystem.Gravity);
             gravity = movementSystem.Gravity;
+            
+            // 重新计算显示值
+            CalculateJumpForce();
             
             #if UNITY_EDITOR
             UnityEditor.EditorUtility.SetDirty(this);
@@ -104,7 +143,7 @@ namespace SayBoom.Movement
             acceleration = 10f;
             deceleration = 10f;
             airControlMultiplier = 0.7f;
-            jumpForce = 12f;
+            jumpHeight = 3f;  // 改为跳跃高度，默认3个Unity单位
             gravity = 25f;
             maxFallSpeed = 20f;
             jumpBufferTime = 0.15f;
@@ -112,7 +151,10 @@ namespace SayBoom.Movement
             variableJumpMultiplier = 0.5f;
             landingSpeedRetention = 0.8f;
             groundCheckRadius = 0.2f;
-            groundLayerMask = 1;
+            groundLayerMask = -1;
+            
+            // 计算对应的跳跃力度
+            CalculateJumpForce();
             
             #if UNITY_EDITOR
             UnityEditor.EditorUtility.SetDirty(this);

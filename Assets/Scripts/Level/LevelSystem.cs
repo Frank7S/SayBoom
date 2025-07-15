@@ -83,6 +83,7 @@ namespace SayBoom.Level
             if (IsInitialized) return;
             
             SetupLevelContainer();
+            AutoDetectExistingTilemaps();
             
             if (autoGenerateBasicLevel && levelPrefabs.Length == 0)
             {
@@ -366,6 +367,15 @@ namespace SayBoom.Level
             platform.transform.position = position;
             platform.transform.localScale = new Vector3(size.x, size.y, 1f);
             
+            // 设置为Ground层 (Layer 8)
+            platform.layer = LayerMask.NameToLayer("Ground");
+            if (platform.layer == -1) platform.layer = 0; // 如果Ground层不存在，使用Default层
+            
+            // 移除3D碰撞器，添加2D碰撞器以兼容2D物理检测
+            DestroyImmediate(platform.GetComponent<BoxCollider>());
+            var collider2D = platform.AddComponent<BoxCollider2D>();
+            collider2D.size = size;
+            
             // 添加关卡元素组件
             var platformElement = platform.AddComponent<PlatformElement>();
             RegisterLevelElement(platformElement);
@@ -467,6 +477,27 @@ namespace SayBoom.Level
                 GameObject containerObj = new GameObject("LevelContainer");
                 containerObj.transform.SetParent(transform);
                 levelContainer = containerObj.transform;
+            }
+        }
+        
+        void AutoDetectExistingTilemaps()
+        {
+            // 查找场景中的所有Tilemap
+            UnityEngine.Tilemaps.Tilemap[] tilemaps = FindObjectsOfType<UnityEngine.Tilemaps.Tilemap>();
+            
+            foreach (var tilemap in tilemaps)
+            {
+                // 检查是否已经有TilemapSupport组件
+                TilemapSupport support = tilemap.GetComponent<TilemapSupport>();
+                if (support == null)
+                {
+                    // 自动添加TilemapSupport组件
+                    support = tilemap.gameObject.AddComponent<TilemapSupport>();
+                    Debug.Log($"[LevelSystem] 为Tilemap自动添加支持组件: {tilemap.name}");
+                }
+                
+                // 注册到关卡系统
+                RegisterLevelElement(support);
             }
         }
         

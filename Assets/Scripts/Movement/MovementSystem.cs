@@ -43,7 +43,7 @@ namespace SayBoom.Movement
         [Header("地面检测")]
         [SerializeField] private Transform groundCheck;
         [SerializeField] private float groundCheckRadius = 0.2f;
-        [SerializeField] private LayerMask groundLayerMask = 1;
+        [SerializeField] private LayerMask groundLayerMask = -1;
         
         [Header("调试选项")]
         [SerializeField] private bool showDebugInfo = true;
@@ -68,6 +68,11 @@ namespace SayBoom.Movement
         public bool IsInitialized { get; private set; }
         public bool IsActive { get; set; } = true;
         
+        /// <summary>
+        /// 当前跳跃高度（根据跳跃力度和重力计算）
+        /// </summary>
+        public float CurrentJumpHeight => (jumpForce * jumpForce) / (2f * gravity);
+        
         public Vector2 Velocity => rb != null ? rb.velocity : Vector2.zero;
         public bool IsGrounded { get; private set; }
         public bool IsMoving => Mathf.Abs(currentVelocityX) > 0.1f;
@@ -89,6 +94,20 @@ namespace SayBoom.Movement
             get => gravity; 
             set => gravity = value; 
         }
+        
+        /// <summary>
+        /// 设置跳跃高度（自动计算对应的跳跃力度）
+        /// </summary>
+        public void SetJumpHeight(float height)
+        {
+            float newJumpForce = Mathf.Sqrt(2f * gravity * height);
+            JumpForce = newJumpForce;
+        }
+        
+        // 其他参数的公开访问属性
+        public float CoyoteTime { get => coyoteTime; set => coyoteTime = value; }
+        public float JumpBufferTime { get => jumpBufferTime; set => jumpBufferTime = value; }
+        public float VariableJumpMultiplier { get => variableJumpMultiplier; set => variableJumpMultiplier = value; }
         
         // 事件
         public System.Action OnLanded { get; set; }
@@ -358,6 +377,45 @@ namespace SayBoom.Movement
                 groundCheckObj.transform.localPosition = new Vector3(0, -0.5f, 0);
                 groundCheck = groundCheckObj.transform;
             }
+            
+            // 智能配置地面层检测
+            SetupGroundLayers();
+        }
+        
+        void SetupGroundLayers()
+        {
+            // 如果使用默认的-1（全部层），则配置常用地面层
+            if (groundLayerMask == -1)
+            {
+                int layerMask = 0;
+                
+                // 添加常见地面层
+                layerMask |= (1 << 0);  // Default层
+                
+                // 尝试添加Ground层
+                int groundLayer = LayerMask.NameToLayer("Ground");
+                if (groundLayer != -1)
+                {
+                    layerMask |= (1 << groundLayer);
+                }
+                
+                // 尝试添加Tilemap层
+                int tilemapLayer = LayerMask.NameToLayer("Tilemap");
+                if (tilemapLayer != -1)
+                {
+                    layerMask |= (1 << tilemapLayer);
+                }
+                
+                // 尝试添加Platform层
+                int platformLayer = LayerMask.NameToLayer("Platform");
+                if (platformLayer != -1)
+                {
+                    layerMask |= (1 << platformLayer);
+                }
+                
+                groundLayerMask = layerMask;
+                Debug.Log($"[MovementSystem] 自动配置地面层检测: {groundLayerMask}");
+            }
         }
         
         #endregion
@@ -401,18 +459,29 @@ namespace SayBoom.Movement
             GUILayout.Label($"土狼时间: {coyoteTimer:F2}s");
             GUILayout.Label($"跳跃缓冲: {jumpBufferTimer:F2}s");
             GUILayout.Label($"输入: {currentInput}");
+            GUILayout.Label($"地面层遮罩: {groundLayerMask.value}");
+            GUILayout.Label($"当前跳跃高度: {CurrentJumpHeight:F2}单位");
             
             GUILayout.Space(10);
-            GUILayout.Label("快速调整参数:", new GUIStyle(GUI.skin.label) { fontStyle = FontStyle.Bold });
+            GUILayout.Label("策划调整参数:", new GUIStyle(GUI.skin.label) { fontStyle = FontStyle.Bold });
             
             GUILayout.BeginHorizontal();
-            GUILayout.Label($"跳跃力: {jumpForce:F1}");
-            jumpForce = GUILayout.HorizontalSlider(jumpForce, 5f, 25f, GUILayout.Width(100));
+            float oldJumpHeight = CurrentJumpHeight;
+            GUILayout.Label($"跳跃高度: {oldJumpHeight:F1}单位");
+            float newJumpHeight = GUILayout.HorizontalSlider(oldJumpHeight, 1f, 8f, GUILayout.Width(100));
+            if (Mathf.Abs(newJumpHeight - oldJumpHeight) > 0.01f)
+            {
+                SetJumpHeight(newJumpHeight);
+            }
             GUILayout.EndHorizontal();
             
             GUILayout.BeginHorizontal();
             GUILayout.Label($"重力: {gravity:F1}");
             gravity = GUILayout.HorizontalSlider(gravity, 10f, 50f, GUILayout.Width(100));
+            GUILayout.EndHorizontal();
+            
+            GUILayout.BeginHorizontal();
+            GUILayout.Label($"计算跳跃力: {jumpForce:F1}", new GUIStyle(GUI.skin.label) { fontSize = 10 });
             GUILayout.EndHorizontal();
             
             GUILayout.EndVertical();
