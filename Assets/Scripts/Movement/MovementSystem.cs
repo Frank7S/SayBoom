@@ -363,7 +363,7 @@ namespace SayBoom.Movement
         void SetupPhysics()
         {
             rb.freezeRotation = true;
-            rb.gravityScale = 0; // 使用自定义重力
+            // rb.gravityScale = 0; // 使用自定义重力
             rb.drag = 0;
             rb.angularDrag = 0;
         }
