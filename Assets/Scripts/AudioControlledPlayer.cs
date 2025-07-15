@@ -1,164 +1,332 @@
 using UnityEngine;
 
+/// <summary>
+/// 音频控制玩家 - 整合了操作控制和音频控制模块
+/// 现在使用分离的模块化设计，支持马里奥式跳跃系统
+/// </summary>
 public class AudioControlledPlayer : MonoBehaviour
 {
-    [Header("移动设置")]
-    public float moveSpeed = 5f;
+    [Header("模块组件")]
+    [Tooltip("玩家操作控制器")]
+    public PlayerController playerController;
     
-    [Header("音频设置")]
-    public AudioSource audioSource;
-    public float scaleSensitivity = 2f;
-    public float minScale = 0.5f;
-    public float maxScale = 3f;
-    public float scaleSmoothing = 5f;
+    [Tooltip("音频控制器")]
+    public AudioController audioController;
     
-    [Header("音频采样设置")]
-    public int sampleSize = 1024;
-    public FFTWindow fftWindow = FFTWindow.Rectangular;
+    [Header("快速设置")]
+    [Tooltip("如果为true，将自动添加缺失的组件")]
+    public bool autoSetupComponents = true;
     
-    private Vector3 originalScale;
-    private Vector3 targetScale;
-    private float[] audioSpectrum;
+    [Tooltip("如果为true，将自动添加必要的物理组件")]
+    public bool autoSetupPhysics = true;
+    
+    void Awake()
+    {
+        if (autoSetupComponents)
+        {
+            SetupComponents();
+        }
+        
+        if (autoSetupPhysics)
+        {
+            SetupPhysicsComponents();
+        }
+    }
     
     void Start()
     {
-        // 保存原始缩放
-        originalScale = transform.localScale;
-        targetScale = originalScale;
-        
-        // 初始化音频频谱数组
-        audioSpectrum = new float[sampleSize];
-        
-        // 如果没有指定音频源，尝试获取组件
-        if (audioSource == null)
-        {
-            audioSource = GetComponent<AudioSource>();
-        }
-        
-        // 如果仍然没有音频源，添加一个并设置为从麦克风输入
-        if (audioSource == null)
-        {
-            audioSource = gameObject.AddComponent<AudioSource>();
-            SetupMicrophoneInput();
-        }
+        // 验证组件
+        ValidateComponents();
     }
     
-    void Update()
+    /// <summary>
+    /// 自动设置组件
+    /// </summary>
+    void SetupComponents()
     {
-        HandleMovement();
-        HandleAudioScaling();
-    }
-    
-    void HandleMovement()
-    {
-        // 获取输入
-        float horizontal = Input.GetAxis("Horizontal"); // A/D 键
-        float vertical = Input.GetAxis("Vertical");     // W/S 键
-        
-        // 计算移动向量
-        Vector3 movement = new Vector3(horizontal, vertical, 0) * moveSpeed * Time.deltaTime;
-        
-        // 应用移动
-        transform.Translate(movement);
-    }
-    
-    void HandleAudioScaling()
-    {
-        if (audioSource != null && audioSource.isPlaying)
+        // 设置玩家控制器
+        if (playerController == null)
         {
-            // 获取音频频谱数据
-            AudioListener.GetSpectrumData(audioSpectrum, 0, fftWindow);
-            
-            // 计算音频强度（取前几个频段的平均值）
-            float audioLevel = 0f;
-            int frequencyBands = Mathf.Min(64, sampleSize); // 只取前64个频段
-            
-            for (int i = 0; i < frequencyBands; i++)
+            playerController = GetComponent<PlayerController>();
+            if (playerController == null)
             {
-                audioLevel += audioSpectrum[i];
+                playerController = gameObject.AddComponent<PlayerController>();
             }
-            
-            audioLevel /= frequencyBands;
-            
-            // 将音频级别转换为缩放因子
-            float scaleMultiplier = 1f + (audioLevel * scaleSensitivity);
-            scaleMultiplier = Mathf.Clamp(scaleMultiplier, minScale, maxScale);
-            
-            // 设置目标缩放
-            targetScale = originalScale * scaleMultiplier;
-        }
-        else
-        {
-            // 如果没有音频播放，恢复到原始大小
-            targetScale = originalScale;
         }
         
-        // 平滑过渡到目标缩放
-        transform.localScale = Vector3.Lerp(transform.localScale, targetScale, scaleSmoothing * Time.deltaTime);
-    }
-    
-    void SetupMicrophoneInput()
-    {
-        // 检查是否有可用的麦克风
-        if (Microphone.devices.Length > 0)
+        // 设置音频控制器
+        if (audioController == null)
         {
-            // 使用默认麦克风
-            string microphoneName = Microphone.devices[0];
-            
-            // 创建音频片段从麦克风录制
-            audioSource.clip = Microphone.Start(microphoneName, true, 1, AudioSettings.outputSampleRate);
-            audioSource.loop = true;
-            
-            // 等待麦克风开始录制
-            while (!(Microphone.GetPosition(microphoneName) > 0)) { }
-            
-            // 播放麦克风输入
-            audioSource.Play();
-            
-            Debug.Log($"已连接麦克风: {microphoneName}");
-        }
-        else
-        {
-            Debug.LogWarning("未检测到可用的麦克风设备！");
+            audioController = GetComponent<AudioController>();
+            if (audioController == null)
+            {
+                audioController = gameObject.AddComponent<AudioController>();
+            }
         }
     }
     
-    // 可选：添加手动音频控制方法
-    public void SetAudioSource(AudioSource newAudioSource)
+    /// <summary>
+    /// 自动设置物理组件
+    /// </summary>
+    void SetupPhysicsComponents()
     {
-        audioSource = newAudioSource;
+        // 确保有Rigidbody2D组件（PlayerController会自动添加）
+        Rigidbody2D rb = GetComponent<Rigidbody2D>();
+        
+        // 确保有Collider2D组件
+        Collider2D collider = GetComponent<Collider2D>();
+        if (collider == null)
+        {
+            // 添加BoxCollider2D作为默认碰撞器
+            BoxCollider2D boxCollider = gameObject.AddComponent<BoxCollider2D>();
+            Debug.Log("已自动添加BoxCollider2D组件");
+        }
     }
     
-    // 可选：获取当前音频级别（用于调试）
+    /// <summary>
+    /// 验证组件是否正确设置
+    /// </summary>
+    void ValidateComponents()
+    {
+        if (playerController == null)
+        {
+            Debug.LogWarning("PlayerController组件未找到！玩家将无法移动。");
+        }
+        
+        if (audioController == null)
+        {
+            Debug.LogWarning("AudioController组件未找到！音频响应将不工作。");
+        }
+        
+        // 验证物理组件
+        if (GetComponent<Rigidbody2D>() == null)
+        {
+            Debug.LogWarning("Rigidbody2D组件未找到！跳跃系统可能无法正常工作。");
+        }
+        
+        if (GetComponent<Collider2D>() == null)
+        {
+            Debug.LogWarning("Collider2D组件未找到！碰撞检测可能无法正常工作。");
+        }
+        
+        if (playerController != null && audioController != null)
+        {
+            Debug.Log("音频控制玩家初始化完成！可以使用A/D移动，空格跳跃，对着麦克风说话控制缩放。");
+        }
+    }
+    
+    // ===================
+    // 移动控制接口
+    // ===================
+    
+    /// <summary>
+    /// 设置移动速度
+    /// </summary>
+    public void SetMoveSpeed(float speed)
+    {
+        if (playerController != null)
+        {
+            playerController.SetMoveSpeed(speed);
+        }
+    }
+    
+    /// <summary>
+    /// 获取移动速度
+    /// </summary>
+    public float GetMoveSpeed()
+    {
+        return playerController != null ? playerController.GetMoveSpeed() : 0f;
+    }
+    
+    /// <summary>
+    /// 设置跳跃力度
+    /// </summary>
+    public void SetJumpForce(float force)
+    {
+        if (playerController != null)
+        {
+            playerController.SetJumpForce(force);
+        }
+    }
+    
+    /// <summary>
+    /// 获取是否在地面
+    /// </summary>
+    public bool IsGrounded()
+    {
+        return playerController != null ? playerController.IsGrounded() : false;
+    }
+    
+    /// <summary>
+    /// 强制跳跃
+    /// </summary>
+    public void ForceJump()
+    {
+        if (playerController != null)
+        {
+            playerController.ForceJump();
+        }
+    }
+    
+    /// <summary>
+    /// 获取当前移动速度
+    /// </summary>
+    public Vector2 GetVelocity()
+    {
+        return playerController != null ? playerController.GetVelocity() : Vector2.zero;
+    }
+    
+    // ===================
+    // 音频控制接口
+    // ===================
+    
+    /// <summary>
+    /// 设置音频源
+    /// </summary>
+    public void SetAudioSource(AudioSource audioSource)
+    {
+        if (audioController != null)
+        {
+            audioController.SetAudioSource(audioSource);
+        }
+    }
+    
+    /// <summary>
+    /// 设置缩放敏感度
+    /// </summary>
+    public void SetScaleSensitivity(float sensitivity)
+    {
+        if (audioController != null)
+        {
+            audioController.SetScaleSensitivity(sensitivity);
+        }
+    }
+    
+    /// <summary>
+    /// 获取当前音频级别
+    /// </summary>
     public float GetCurrentAudioLevel()
     {
-        if (audioSpectrum == null) return 0f;
-        
-        float level = 0f;
-        int frequencyBands = Mathf.Min(64, sampleSize);
-        
-        for (int i = 0; i < frequencyBands; i++)
-        {
-            level += audioSpectrum[i];
-        }
-        
-        return level / frequencyBands;
+        return audioController != null ? audioController.GetCurrentAudioLevel() : 0f;
     }
     
-    // 在Inspector中显示当前状态
+    /// <summary>
+    /// 重置缩放到原始大小
+    /// </summary>
+    public void ResetScale()
+    {
+        if (audioController != null)
+        {
+            audioController.ResetScale();
+        }
+    }
+    
+    // ===================
+    // 模块控制接口
+    // ===================
+    
+    /// <summary>
+    /// 启用/禁用玩家控制
+    /// </summary>
+    public void SetPlayerControlEnabled(bool enabled)
+    {
+        if (playerController != null)
+        {
+            playerController.enabled = enabled;
+        }
+    }
+    
+    /// <summary>
+    /// 启用/禁用音频控制
+    /// </summary>
+    public void SetAudioControlEnabled(bool enabled)
+    {
+        if (audioController != null)
+        {
+            audioController.enabled = enabled;
+        }
+    }
+    
+    /// <summary>
+    /// 启用/禁用物理
+    /// </summary>
+    public void SetPhysicsEnabled(bool enabled)
+    {
+        Rigidbody2D rb = GetComponent<Rigidbody2D>();
+        if (rb != null)
+        {
+            rb.simulated = enabled;
+        }
+    }
+    
+    // ===================
+    // 特殊功能接口
+    // ===================
+    
+    /// <summary>
+    /// 音频触发跳跃（当音频达到某个阈值时自动跳跃）
+    /// </summary>
+    public void EnableAudioJump(float audioThreshold = 0.1f)
+    {
+        if (audioController != null && playerController != null)
+        {
+            // 这里可以添加一个协程来监控音频级别并触发跳跃
+            StartCoroutine(AudioJumpCoroutine(audioThreshold));
+        }
+    }
+    
+    /// <summary>
+    /// 音频跳跃协程
+    /// </summary>
+    private System.Collections.IEnumerator AudioJumpCoroutine(float threshold)
+    {
+        while (true)
+        {
+            if (audioController.GetCurrentAudioLevel() > threshold && playerController.IsGrounded())
+            {
+                playerController.ForceJump();
+                yield return new WaitForSeconds(0.5f); // 防止连续跳跃
+            }
+            yield return new WaitForFixedUpdate();
+        }
+    }
+    
+    // ===================
+    // 调试和可视化
+    // ===================
+    
     void OnDrawGizmosSelected()
     {
-        if (Application.isPlaying)
+        // 绘制组件状态指示器
+        Gizmos.color = Color.white;
+        Vector3 pos = transform.position + Vector3.up * 2f;
+        
+        // 玩家控制器指示器（蓝色）
+        if (playerController != null)
         {
-            // 绘制移动范围指示器
             Gizmos.color = Color.blue;
-            Gizmos.DrawWireCube(transform.position, Vector3.one * 0.5f);
-            
-            // 绘制缩放范围指示器
-            Gizmos.color = Color.red;
-            Gizmos.DrawWireCube(transform.position, originalScale * minScale);
+            Gizmos.DrawSphere(pos + Vector3.left * 0.5f, 0.1f);
+        }
+        
+        // 音频控制器指示器（绿色）
+        if (audioController != null)
+        {
             Gizmos.color = Color.green;
-            Gizmos.DrawWireCube(transform.position, originalScale * maxScale);
+            Gizmos.DrawSphere(pos + Vector3.right * 0.5f, 0.1f);
+        }
+        
+        // 物理组件指示器（黄色）
+        if (GetComponent<Rigidbody2D>() != null)
+        {
+            Gizmos.color = Color.yellow;
+            Gizmos.DrawSphere(pos + Vector3.back * 0.5f, 0.1f);
+        }
+        
+        // 碰撞器指示器（红色）
+        if (GetComponent<Collider2D>() != null)
+        {
+            Gizmos.color = Color.red;
+            Gizmos.DrawSphere(pos + Vector3.forward * 0.5f, 0.1f);
         }
     }
 } 
