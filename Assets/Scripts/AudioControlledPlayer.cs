@@ -24,6 +24,7 @@ public class AudioControlledPlayer : MonoBehaviour
 
     [Header("物体重力")]
     public float gravity;
+
     
     void Awake()
     {

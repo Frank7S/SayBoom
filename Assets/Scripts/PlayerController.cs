@@ -10,36 +10,42 @@ public class PlayerController : MonoBehaviour
     public float moveSpeed = 5f;
     public float acceleration = 10f;
     public float deceleration = 10f;
-    
+
     [Header("跳跃设置")]
     public float jumpForce = 12f;
     public float gravity = 25f;
     public float maxFallSpeed = 20f;
     public float jumpBufferTime = 0.2f;  // 跳跃缓冲时间
     public float coyoteTime = 0.2f;      // 土狼时间（离开地面后仍可跳跃的时间）
-    
+
     [Header("地面检测")]
     public Transform groundCheck;
     public float groundCheckRadius = 0.2f;
     public LayerMask groundLayerMask = 1;
-    
+
     [Header("调试")]
     public bool showDebugInfo = true;
-    
+
     // 物理组件
     private Rigidbody2D rb;
-    
+
     // 移动状态
     private float horizontalInput;
     private float currentVelocityX;
-    
+
     // 跳跃状态
     private bool isGrounded;
     private bool wasGrounded;
     private float jumpBufferTimer;
     private float coyoteTimer;
     private bool jumpPressed;
-    
+
+
+    [Header("脚部检测：用于防止多次跳跃")]
+    public Transform _virtual_foot;
+    [SerializeField] private bool isJumping;
+
+
     void Awake()
     {
         // 获取或添加Rigidbody2D组件
@@ -48,11 +54,11 @@ public class PlayerController : MonoBehaviour
         {
             rb = gameObject.AddComponent<Rigidbody2D>();
         }
-        
+
         // 设置Rigidbody2D参数
         rb.freezeRotation = true;  // 防止旋转
-        // rb.gravityScale = 0;       // 使用自定义重力
-        
+                                   // rb.gravityScale = 0;       // 使用自定义重力
+
         // 如果没有地面检测点，创建一个
         if (groundCheck == null)
         {
@@ -62,15 +68,23 @@ public class PlayerController : MonoBehaviour
             groundCheck = groundCheckObj.transform;
         }
     }
-    
+
+    private void Start() {
+        _virtual_foot = transform.Find("Virtual foot");
+    }
+
     void Update()
     {
         HandleInput();
         CheckGrounded();
         HandleJumpBuffer();
         HandleCoyoteTime();
+
+
+        // 跳跃中检测是否着陆
+        checkingJumpingFlag();
     }
-    
+
     void FixedUpdate()
     {
         HandleMovement();
@@ -78,7 +92,7 @@ public class PlayerController : MonoBehaviour
         ApplyGravity();
         ClampVelocity();
     }
-    
+
     /// <summary>
     /// 处理输入
     /// </summary>
@@ -86,7 +100,7 @@ public class PlayerController : MonoBehaviour
     {
         // 水平移动输入
         horizontalInput = Input.GetAxisRaw("Horizontal");
-        
+
         // 跳跃输入
         if (Input.GetButtonDown("Jump"))
         {
@@ -94,7 +108,7 @@ public class PlayerController : MonoBehaviour
             jumpBufferTimer = jumpBufferTime;
         }
     }
-    
+
     /// <summary>
     /// 检测是否在地面
     /// </summary>
@@ -102,14 +116,14 @@ public class PlayerController : MonoBehaviour
     {
         wasGrounded = isGrounded;
         isGrounded = Physics2D.OverlapCircle(groundCheck.position, groundCheckRadius, groundLayerMask);
-        
+
         // 如果刚着地，重置土狼时间
         if (isGrounded && !wasGrounded)
         {
             coyoteTimer = coyoteTime;
         }
     }
-    
+
     /// <summary>
     /// 处理跳跃缓冲
     /// </summary>
@@ -120,7 +134,7 @@ public class PlayerController : MonoBehaviour
             jumpBufferTimer -= Time.deltaTime;
         }
     }
-    
+
     /// <summary>
     /// 处理土狼时间
     /// </summary>
@@ -135,14 +149,14 @@ public class PlayerController : MonoBehaviour
             coyoteTimer -= Time.deltaTime;
         }
     }
-    
+
     /// <summary>
     /// 处理水平移动
     /// </summary>
     void HandleMovement()
     {
         float targetVelocity = horizontalInput * moveSpeed;
-        
+
         // 平滑加速和减速
         if (Mathf.Abs(horizontalInput) > 0.1f)
         {
@@ -154,36 +168,37 @@ public class PlayerController : MonoBehaviour
             // 减速
             currentVelocityX = Mathf.MoveTowards(currentVelocityX, 0, deceleration * Time.fixedDeltaTime);
         }
-        
+
         // 应用水平速度
         rb.velocity = new Vector2(currentVelocityX, rb.velocity.y);
     }
-    
+
     /// <summary>
     /// 处理跳跃
     /// </summary>
     void HandleJump()
     {
         // 检查是否可以跳跃（有跳跃输入缓冲且在地面或土狼时间内）
-        if (jumpBufferTimer > 0 && coyoteTimer > 0)
+        if (jumpBufferTimer > 0 && coyoteTimer > 0 && !isJumping)
         {
             // 执行跳跃
             rb.velocity = new Vector2(rb.velocity.x, jumpForce);
-            
+
             // 清除缓冲和土狼时间
             jumpBufferTimer = 0;
             coyoteTimer = 0;
-            
+
             jumpPressed = false;
+            isJumping = true;
         }
-        
+
         // 可变跳跃高度（松开跳跃键时减少向上速度）
         if (!Input.GetButton("Jump") && rb.velocity.y > 0)
         {
             rb.velocity = new Vector2(rb.velocity.x, rb.velocity.y * 0.5f);
         }
     }
-    
+
     /// <summary>
     /// 应用重力
     /// </summary>
@@ -194,7 +209,7 @@ public class PlayerController : MonoBehaviour
             rb.velocity = new Vector2(rb.velocity.x, rb.velocity.y - gravity * Time.fixedDeltaTime);
         }
     }
-    
+
     /// <summary>
     /// 限制速度
     /// </summary>
@@ -206,11 +221,11 @@ public class PlayerController : MonoBehaviour
             rb.velocity = new Vector2(rb.velocity.x, -maxFallSpeed);
         }
     }
-    
+
     // ===================
     // 公共接口方法
     // ===================
-    
+
     /// <summary>
     /// 设置移动速度
     /// </summary>
@@ -218,7 +233,7 @@ public class PlayerController : MonoBehaviour
     {
         moveSpeed = speed;
     }
-    
+
     /// <summary>
     /// 获取当前移动速度
     /// </summary>
@@ -226,7 +241,7 @@ public class PlayerController : MonoBehaviour
     {
         return moveSpeed;
     }
-    
+
     /// <summary>
     /// 设置跳跃力度
     /// </summary>
@@ -234,7 +249,7 @@ public class PlayerController : MonoBehaviour
     {
         jumpForce = force;
     }
-    
+
     /// <summary>
     /// 获取是否在地面
     /// </summary>
@@ -242,7 +257,7 @@ public class PlayerController : MonoBehaviour
     {
         return isGrounded;
     }
-    
+
     /// <summary>
     /// 强制跳跃
     /// </summary>
@@ -253,7 +268,7 @@ public class PlayerController : MonoBehaviour
             rb.velocity = new Vector2(rb.velocity.x, jumpForce);
         }
     }
-    
+
     /// <summary>
     /// 获取当前速度
     /// </summary>
@@ -261,11 +276,11 @@ public class PlayerController : MonoBehaviour
     {
         return rb != null ? rb.velocity : Vector2.zero;
     }
-    
+
     // ===================
     // 调试和可视化
     // ===================
-    
+
     void OnDrawGizmosSelected()
     {
         // 绘制地面检测区域
@@ -274,11 +289,11 @@ public class PlayerController : MonoBehaviour
             Gizmos.color = isGrounded ? Color.green : Color.red;
             Gizmos.DrawWireSphere(groundCheck.position, groundCheckRadius);
         }
-        
+
         // 绘制移动范围指示器
         Gizmos.color = Color.blue;
         Gizmos.DrawWireCube(transform.position, Vector3.one * 0.5f);
-        
+
         // 绘制速度向量
         if (Application.isPlaying && rb != null)
         {
@@ -286,7 +301,7 @@ public class PlayerController : MonoBehaviour
             Gizmos.DrawRay(transform.position, rb.velocity * 0.1f);
         }
     }
-    
+
     void OnGUI()
     {
         if (showDebugInfo && Application.isPlaying)
@@ -297,6 +312,22 @@ public class PlayerController : MonoBehaviour
             GUI.Label(new Rect(10, 50, 200, 20), $"土狼时间: {coyoteTimer:F2}");
             GUI.Label(new Rect(10, 70, 200, 20), $"跳跃缓冲: {jumpBufferTimer:F2}");
             GUI.Label(new Rect(10, 90, 200, 20), $"控制说明: A/D移动, 空格跳跃");
+        }
+    }
+
+
+    private void checkingJumpingFlag()
+    {
+        if (isJumping)
+        {
+            Collider2D ground =Physics2D.OverlapCircle(_virtual_foot.transform.position, 0.1f, 1 << 6);
+            if (ground)
+            {
+                isJumping = false;
+                
+                Debug.Log("解除状态");
+            }
+
         }
     }
 } 
