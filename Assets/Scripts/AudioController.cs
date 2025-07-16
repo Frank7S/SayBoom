@@ -19,6 +19,12 @@ public class AudioController : MonoBehaviour
     private Vector3 originalScale;
     private Vector3 targetScale;
     private float[] audioSpectrum;
+
+    [Header("大中小阈值设置")]
+ 
+    public float smallThreshold = 1.15f; // 小型上限
+    public float largeThreshold = 1.7f;  // 大型下限
+    private int lastSizeState = -1; // -1表示初始未判定
     
     void Start()
     {
@@ -75,11 +81,33 @@ public class AudioController : MonoBehaviour
             
             // 设置目标缩放
             targetScale = originalScale * scaleMultiplier;
+
+            // 体型判定
+            int sizeState = 0; // 0=小，1=中，2=大
+            if (scaleMultiplier <= smallThreshold)
+                sizeState = 0;
+            else if (scaleMultiplier >= largeThreshold)
+                sizeState = 2;
+            else
+                sizeState = 1;
+
+            // 状态变化时通过事件中心发送事件
+            if (sizeState != lastSizeState)
+            {
+                EventCenter.GetInstance().EventTrigger<int>("PlayerSizeChanged", sizeState);
+                lastSizeState = sizeState;
+            }
         }
         else
         {
             // 如果没有音频播放，恢复到原始大小
             targetScale = originalScale;
+            // 可选：无音频时重置状态
+            if (lastSizeState != 0)
+            {
+                EventCenter.GetInstance().EventTrigger<int>("PlayerSizeChanged", 0);
+                lastSizeState = 0;
+            }
         }
         
         // 平滑过渡到目标缩放
