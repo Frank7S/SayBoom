@@ -22,7 +22,7 @@ public class AudioControlledPlayer : MonoBehaviour
 
     public Rigidbody2D rigidbody;
 
-    [Header("物体重力")]
+    [Header("物理特性")]
     public float gravity;
 
     
@@ -44,7 +44,8 @@ public class AudioControlledPlayer : MonoBehaviour
         // 验证组件
         ValidateComponents();
     }
-    
+
+
     /// <summary>
     /// 自动设置组件
     /// </summary>

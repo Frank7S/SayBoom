@@ -1,3 +1,5 @@
+using Unity.Collections;
+using Unity.VisualScripting;
 using UnityEngine;
 
 /// <summary>
@@ -46,6 +48,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private bool isJumping;
 
 
+    public BoxCollider2D collider;
     void Awake()
     {
         // 获取或添加Rigidbody2D组件
@@ -71,6 +74,7 @@ public class PlayerController : MonoBehaviour
 
     private void Start() {
         _virtual_foot = transform.Find("Virtual foot");
+        collider = transform.GetComponent<BoxCollider2D>();
     }
 
     void Update()
@@ -171,6 +175,14 @@ public class PlayerController : MonoBehaviour
 
         // 应用水平速度
         rb.velocity = new Vector2(currentVelocityX, rb.velocity.y);
+
+
+        // 根据速度向量 检测当前物体是否贴墙，如果贴墙则将摩擦设置为0
+        // rb.velocity * 0.1f
+
+        RaycastHit2D hit = Physics2D.Raycast(new Vector2(transform.position.x, transform.position.y), rb.velocity.normalized, 1f, 1 << 6);
+
+        collider.sharedMaterial.friction = hit ? 0f : 0.1f;
     }
 
     /// <summary>
