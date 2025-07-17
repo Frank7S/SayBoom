@@ -61,6 +61,11 @@ public class MoveAble : MonoBehaviour
                 isTigger = true;
             }
 
+        }
+
+        if (other.transform.tag == "Player")
+        {
+
             other.transform.GetComponent<AudioController>().Scale_flag = false;
         }
 
