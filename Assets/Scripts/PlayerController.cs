@@ -23,7 +23,7 @@ public class PlayerController : MonoBehaviour
     [Header("地面检测")]
     public Transform groundCheck;
     public float groundCheckRadius = 0.2f;
-    public LayerMask groundLayerMask = 1;
+    public LayerMask groundLayerMask = 1<<6;
 
     [Header("调试")]
     public bool showDebugInfo = true;
@@ -38,8 +38,8 @@ public class PlayerController : MonoBehaviour
     // 跳跃状态
     private bool isGrounded;
     private bool wasGrounded;
-    private float jumpBufferTimer;
-    private float coyoteTimer;
+    public float jumpBufferTimer;
+    public float coyoteTimer;
     private bool jumpPressed;
 
 
@@ -67,7 +67,7 @@ public class PlayerController : MonoBehaviour
         {
             GameObject groundCheckObj = new GameObject("GroundCheck");
             groundCheckObj.transform.SetParent(transform);
-            // groundCheckObj.transform.localPosition = new Vector3(0, -0.5f, 0);
+            groundCheckObj.transform.localPosition = new Vector3(0, -0.5f, 0);
             groundCheck = groundCheckObj.transform;
         }
     }
@@ -136,6 +136,7 @@ public class PlayerController : MonoBehaviour
         if (jumpBufferTimer > 0)
         {
             jumpBufferTimer -= Time.deltaTime;
+            jumpBufferTimer = jumpBufferTimer < 0 ? 0 : jumpBufferTimer;
         }
     }
 
@@ -151,6 +152,7 @@ public class PlayerController : MonoBehaviour
         else if (coyoteTimer > 0)
         {
             coyoteTimer -= Time.deltaTime;
+            coyoteTimer = coyoteTimer < 0 ? 0 : coyoteTimer;
         }
     }
 
