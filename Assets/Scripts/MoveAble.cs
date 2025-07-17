@@ -63,22 +63,10 @@ public class MoveAble : MonoBehaviour
 
         }
 
-        if (other.transform.tag == "Player")
-        {
-
-            other.transform.GetComponent<AudioController>().Scale_flag = false;
-        }
 
     }
 
 
-    void OnCollisionExit2D(Collision2D collision)
-    {
-        if (collision.transform.tag == "Player")
-        {
-            
-            collision.transform.GetComponent<AudioController>().Scale_flag = true;
-        }
-    }
+
 
 }

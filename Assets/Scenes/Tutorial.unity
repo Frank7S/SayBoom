@@ -298,7 +298,8 @@ PrefabInstance:
       propertyPath: m_Name
       value: UPpuzzle (1)
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 6324739643458605778, guid: 031df5127ede78f41950d2cd40f3b4f9, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
@@ -7590,11 +7591,8 @@ PrefabInstance:
       propertyPath: m_Offset.y
       value: -0.058845162
       objectReference: {fileID: 0}
-    - target: {fileID: 5558956273269777359, guid: 031df5127ede78f41950d2cd40f3b4f9, type: 3}
-      propertyPath: m_IsTrigger
-      value: 1
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 6324739643458605778, guid: 031df5127ede78f41950d2cd40f3b4f9, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
@@ -7667,7 +7665,8 @@ PrefabInstance:
       propertyPath: m_Name
       value: UPpuzzle
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 6324739643458605778, guid: 031df5127ede78f41950d2cd40f3b4f9, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
