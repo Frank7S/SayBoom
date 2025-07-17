@@ -26,7 +26,7 @@ public class BreakableItem : MonoBehaviour
 
     void OnCollisionEnter2D(Collision2D collision)
     {
-        if (collision.gameObject.CompareTag("Player") && playerSize == 2)
+        if (collision.gameObject.CompareTag("Player") && playerSize >=1)
         {
             Debug.Log("玩家体型为：" + playerSize);
             Destroy(gameObject);
