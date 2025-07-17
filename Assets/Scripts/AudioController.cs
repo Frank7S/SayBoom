@@ -25,6 +25,8 @@ public class AudioController : MonoBehaviour
     public float smallThreshold = 1.15f; // 小型上限
     public float largeThreshold = 1.7f;  // 大型下限
     private int lastSizeState = -1; // -1表示初始未判定
+
+    public bool UI_control_flag = true;
     
     void Start()
     {
@@ -59,7 +61,7 @@ public class AudioController : MonoBehaviour
     /// </summary>
     void HandleAudioScaling()
     {
-        if (audioSource != null && audioSource.isPlaying)
+        if (audioSource != null && audioSource.isPlaying && UI_control_flag)
         {
             // 获取音频频谱数据
             AudioListener.GetSpectrumData(audioSpectrum, 0, fftWindow);
