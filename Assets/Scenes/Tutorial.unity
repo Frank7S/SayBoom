@@ -4116,6 +4116,7 @@ GameObject:
   - component: {fileID: 410720889}
   - component: {fileID: 410720890}
   - component: {fileID: 410720891}
+  - component: {fileID: 410720892}
   m_Layer: 0
   m_Name: seiling (1)
   m_TagString: Untagged
@@ -4235,6 +4236,18 @@ BoxCollider2D:
   serializedVersion: 2
   m_Size: {x: 1, y: 1}
   m_EdgeRadius: 0
+--- !u!114 &410720892
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 410720888}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 149643807edc59b44af28cb976ce4ec4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &426602809
 GameObject:
   m_ObjectHideFlags: 0
@@ -6500,7 +6513,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7839032869137172099, guid: 4af90c5cf76d2b540a6f06f6c263af95, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 86.11
+      value: 86.7
       objectReference: {fileID: 0}
     - target: {fileID: 7839032869137172099, guid: 4af90c5cf76d2b540a6f06f6c263af95, type: 3}
       propertyPath: m_LocalPosition.y
@@ -7279,6 +7292,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1848661879}
   - component: {fileID: 1848661880}
+  - component: {fileID: 1848661881}
   m_Layer: 0
   m_Name: seiling (2)
   m_TagString: Untagged
@@ -7353,6 +7367,18 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!114 &1848661881
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1848661878}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 149643807edc59b44af28cb976ce4ec4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1925737702
 GameObject:
   m_ObjectHideFlags: 0
@@ -7452,7 +7478,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7839032869137172099, guid: 4af90c5cf76d2b540a6f06f6c263af95, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 106.84918
+      value: 109.4
       objectReference: {fileID: 0}
     - target: {fileID: 7839032869137172099, guid: 4af90c5cf76d2b540a6f06f6c263af95, type: 3}
       propertyPath: m_LocalPosition.y
@@ -7622,6 +7648,7 @@ GameObject:
   - component: {fileID: 2092577071}
   - component: {fileID: 2092577072}
   - component: {fileID: 2092577073}
+  - component: {fileID: 2092577074}
   m_Layer: 0
   m_Name: seiling
   m_TagString: Untagged
@@ -7741,6 +7768,18 @@ BoxCollider2D:
   serializedVersion: 2
   m_Size: {x: 1, y: 1}
   m_EdgeRadius: 0
+--- !u!114 &2092577074
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2092577070}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 149643807edc59b44af28cb976ce4ec4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1001 &2549465699132816337
 PrefabInstance:
   m_ObjectHideFlags: 0
