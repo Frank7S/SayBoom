@@ -46,10 +46,10 @@ public class MoveAble : MonoBehaviour
         if (collision.tag == "Player" && !isTigger)
         {
             //TODO 获取玩家大小类型  
-            int type = 1;
+            int type = collision.transform.GetComponent<AudioControlledPlayer>().Size;
         Debug.Log("Player Entered: " + collision.name ) ;
 
-            if (type == 1)
+            if (type == 2)
             {
                 Vector2 new_dir = directions[(int)v_direction] * distance;
                 Vector3 new_V3_offset = new Vector3(new_dir.x, new_dir.y, 0f);
