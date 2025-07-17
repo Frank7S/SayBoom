@@ -6,19 +6,36 @@ using UnityEngine.UI;
 
 public class Mirohone : MonoBehaviour
 {
-    public Button button;
+    public Toggle toggle;
     public Transform player;
 
 
     private void Start()
     {
-        button = GetComponent<Button>();
-        button.onClick.AddListener(OnButtonClick);
+        toggle = GetComponent<Toggle>();
+        toggle.onValueChanged.AddListener(OnToggleValueChanged);
     }
 
-    private void OnButtonClick()
+    private void OnToggleValueChanged(bool isOn)
     {
-        player.GetComponent<AudioController>().UI_control_flag = !player.GetComponent<AudioController>().UI_control_flag;
+        if (toggle != null)
+        {
+               if (toggle.isOn)
+            {
+                player.GetComponent<AudioController>().UI_control_flag = true;
+            }
+            else
+            {
+                player.GetComponent<AudioController>().UI_control_flag = false;
+            }
+        }
+        else
+        {
+            Debug.LogWarning("Toggle component not found!");
+        }
+        
+        
+        
 
     }
 }
