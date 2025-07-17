@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 /// <summary>
@@ -9,14 +10,14 @@ public class AudioControlledPlayer : MonoBehaviour
     [Header("模块组件")]
     [Tooltip("玩家操作控制器")]
     public PlayerController playerController;
-    
+
     [Tooltip("音频控制器")]
     public AudioController audioController;
-    
+
     [Header("快速设置")]
     [Tooltip("如果为true，将自动添加缺失的组件")]
     public bool autoSetupComponents = true;
-    
+
     [Tooltip("如果为true，将自动添加必要的物理组件")]
     public bool autoSetupPhysics = true;
 
@@ -25,26 +26,38 @@ public class AudioControlledPlayer : MonoBehaviour
     [Header("物理特性")]
     public float gravity;
 
-    
+    public int Size;
     void Awake()
     {
         if (autoSetupComponents)
         {
             SetupComponents();
         }
-        
+
         if (autoSetupPhysics)
         {
             SetupPhysicsComponents();
         }
     }
-    
+
     void Start()
     {
         // 验证组件
         ValidateComponents();
+
+
+        EventCenter.GetInstance().AddEventListener<int>("PlayerSizeChanged", OnPlayerSizeChanged);
     }
 
+    private void OnPlayerSizeChanged(int arg0)
+    {
+        Size = arg0;
+    }
+    void OnDestroy()
+    {
+        // 取消订阅，防止内存泄漏
+        EventCenter.GetInstance().RemoveEventListener<int>("PlayerSizeChanged", OnPlayerSizeChanged);
+    }
 
     /// <summary>
     /// 自动设置组件
@@ -60,7 +73,7 @@ public class AudioControlledPlayer : MonoBehaviour
                 playerController = gameObject.AddComponent<PlayerController>();
             }
         }
-        
+
         // 设置音频控制器
         if (audioController == null)
         {
@@ -71,7 +84,7 @@ public class AudioControlledPlayer : MonoBehaviour
             }
         }
     }
-    
+
     /// <summary>
     /// 自动设置物理组件
     /// </summary>
@@ -79,7 +92,7 @@ public class AudioControlledPlayer : MonoBehaviour
     {
         // 确保有Rigidbody2D组件（PlayerController会自动添加）
         Rigidbody2D rb = GetComponent<Rigidbody2D>();
-        
+
         // 确保有Collider2D组件
         Collider2D collider = GetComponent<Collider2D>();
         if (collider == null)
@@ -124,11 +137,11 @@ public class AudioControlledPlayer : MonoBehaviour
         rigidbody = transform.GetComponent<Rigidbody2D>();
         rigidbody.gravityScale = gravity;
     }
-    
+
     // ===================
     // 移动控制接口
     // ===================
-    
+
     /// <summary>
     /// 设置移动速度
     /// </summary>
@@ -139,7 +152,7 @@ public class AudioControlledPlayer : MonoBehaviour
             playerController.SetMoveSpeed(speed);
         }
     }
-    
+
     /// <summary>
     /// 获取移动速度
     /// </summary>
@@ -147,7 +160,7 @@ public class AudioControlledPlayer : MonoBehaviour
     {
         return playerController != null ? playerController.GetMoveSpeed() : 0f;
     }
-    
+
     /// <summary>
     /// 设置跳跃力度
     /// </summary>
@@ -158,7 +171,7 @@ public class AudioControlledPlayer : MonoBehaviour
             playerController.SetJumpForce(force);
         }
     }
-    
+
     /// <summary>
     /// 获取是否在地面
     /// </summary>
@@ -166,7 +179,7 @@ public class AudioControlledPlayer : MonoBehaviour
     {
         return playerController != null ? playerController.IsGrounded() : false;
     }
-    
+
     /// <summary>
     /// 强制跳跃
     /// </summary>
@@ -177,7 +190,7 @@ public class AudioControlledPlayer : MonoBehaviour
             playerController.ForceJump();
         }
     }
-    
+
     /// <summary>
     /// 获取当前移动速度
     /// </summary>
@@ -185,11 +198,11 @@ public class AudioControlledPlayer : MonoBehaviour
     {
         return playerController != null ? playerController.GetVelocity() : Vector2.zero;
     }
-    
+
     // ===================
     // 音频控制接口
     // ===================
-    
+
     /// <summary>
     /// 设置音频源
     /// </summary>
@@ -200,7 +213,7 @@ public class AudioControlledPlayer : MonoBehaviour
             audioController.SetAudioSource(audioSource);
         }
     }
-    
+
     /// <summary>
     /// 设置缩放敏感度
     /// </summary>
@@ -211,7 +224,7 @@ public class AudioControlledPlayer : MonoBehaviour
             audioController.SetScaleSensitivity(sensitivity);
         }
     }
-    
+
     /// <summary>
     /// 获取当前音频级别
     /// </summary>
@@ -219,7 +232,7 @@ public class AudioControlledPlayer : MonoBehaviour
     {
         return audioController != null ? audioController.GetCurrentAudioLevel() : 0f;
     }
-    
+
     /// <summary>
     /// 重置缩放到原始大小
     /// </summary>
@@ -230,11 +243,11 @@ public class AudioControlledPlayer : MonoBehaviour
             audioController.ResetScale();
         }
     }
-    
+
     // ===================
     // 模块控制接口
     // ===================
-    
+
     /// <summary>
     /// 启用/禁用玩家控制
     /// </summary>
@@ -245,7 +258,7 @@ public class AudioControlledPlayer : MonoBehaviour
             playerController.enabled = enabled;
         }
     }
-    
+
     /// <summary>
     /// 启用/禁用音频控制
     /// </summary>
@@ -256,7 +269,7 @@ public class AudioControlledPlayer : MonoBehaviour
             audioController.enabled = enabled;
         }
     }
-    
+
     /// <summary>
     /// 启用/禁用物理
     /// </summary>
@@ -268,11 +281,11 @@ public class AudioControlledPlayer : MonoBehaviour
             rb.simulated = enabled;
         }
     }
-    
+
     // ===================
     // 特殊功能接口
     // ===================
-    
+
     /// <summary>
     /// 音频触发跳跃（当音频达到某个阈值时自动跳跃）
     /// </summary>
@@ -284,7 +297,7 @@ public class AudioControlledPlayer : MonoBehaviour
             StartCoroutine(AudioJumpCoroutine(audioThreshold));
         }
     }
-    
+
     /// <summary>
     /// 音频跳跃协程
     /// </summary>
@@ -300,38 +313,38 @@ public class AudioControlledPlayer : MonoBehaviour
             yield return new WaitForFixedUpdate();
         }
     }
-    
+
     // ===================
     // 调试和可视化
     // ===================
-    
+
     void OnDrawGizmosSelected()
     {
         // 绘制组件状态指示器
         Gizmos.color = Color.white;
         Vector3 pos = transform.position + Vector3.up * 2f;
-        
+
         // 玩家控制器指示器（蓝色）
         if (playerController != null)
         {
             Gizmos.color = Color.blue;
             Gizmos.DrawSphere(pos + Vector3.left * 0.5f, 0.1f);
         }
-        
+
         // 音频控制器指示器（绿色）
         if (audioController != null)
         {
             Gizmos.color = Color.green;
             Gizmos.DrawSphere(pos + Vector3.right * 0.5f, 0.1f);
         }
-        
+
         // 物理组件指示器（黄色）
         if (GetComponent<Rigidbody2D>() != null)
         {
             Gizmos.color = Color.yellow;
             Gizmos.DrawSphere(pos + Vector3.back * 0.5f, 0.1f);
         }
-        
+
         // 碰撞器指示器（红色）
         if (GetComponent<Collider2D>() != null)
         {
@@ -339,4 +352,4 @@ public class AudioControlledPlayer : MonoBehaviour
             Gizmos.DrawSphere(pos + Vector3.forward * 0.5f, 0.1f);
         }
     }
-} 
+}
