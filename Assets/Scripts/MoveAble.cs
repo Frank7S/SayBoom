@@ -15,6 +15,8 @@ public class MoveAble : MonoBehaviour
     [SerializeField]
     private Collider2D collider;
 
+    public Transform triggerObject;
+
     [Header("方向选择")]
     public Direction v_direction;
 
@@ -40,24 +42,27 @@ public class MoveAble : MonoBehaviour
         }
     }
 
-    void OnTriggerEnter2D(Collider2D collision)
+    private void OnCollisionEnter2D(Collision2D other)
     {
-        
-        if (collision.tag == "Player" && !isTigger)
+
+        if (other.transform.tag == "Player" && !isTigger)
         {
             //TODO 获取玩家大小类型  
-            int type = collision.transform.GetComponent<AudioControlledPlayer>().Size;
-        Debug.Log("Player Entered: " + collision.name ) ;
+            int type = other.transform.GetComponent<AudioControlledPlayer>().Size;
 
             if (type == 2)
             {
                 Vector2 new_dir = directions[(int)v_direction] * distance;
                 Vector3 new_V3_offset = new Vector3(new_dir.x, new_dir.y, 0f);
-                transform.position += new_V3_offset;
+                if(triggerObject != null)
+                    triggerObject.position += new_V3_offset;
+                else
+                    transform.position += new_V3_offset;
 
                 isTigger = true;
             }
         }
+
     }
 
 }
