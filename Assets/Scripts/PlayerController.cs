@@ -48,7 +48,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private bool isJumping;
 
 
-    public BoxCollider2D _collider;
+    public BoxCollider2D collider;
     void Awake()
     {
         // 获取或添加Rigidbody2D组件
@@ -74,7 +74,7 @@ public class PlayerController : MonoBehaviour
 
     private void Start() {
         _virtual_foot = transform.Find("Virtual foot");
-        _collider = transform.GetComponent<BoxCollider2D>();
+        collider = transform.GetComponent<BoxCollider2D>();
     }
 
     void Update()
@@ -182,7 +182,7 @@ public class PlayerController : MonoBehaviour
 
         RaycastHit2D hit = Physics2D.Raycast(new Vector2(transform.position.x, transform.position.y), rb.velocity.normalized, 1f, 1 << 6);
 
-        _collider.sharedMaterial.friction = hit ? 0f : 0.1f;
+        collider.sharedMaterial.friction = hit ? 0f : 0.1f;
     }
 
     /// <summary>
