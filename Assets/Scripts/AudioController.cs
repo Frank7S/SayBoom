@@ -27,6 +27,9 @@ public class AudioController : MonoBehaviour
     private int lastSizeState = -1; // -1表示初始未判定
 
     public bool UI_control_flag = true;
+
+
+    public bool Scale_flag = true;
     
     void Start()
     {
@@ -111,9 +114,11 @@ public class AudioController : MonoBehaviour
                 lastSizeState = 0;
             }
         }
-        
+
         // 平滑过渡到目标缩放
-        transform.localScale = Vector3.Lerp(transform.localScale, targetScale, scaleSmoothing * Time.deltaTime);
+        if (Scale_flag) {
+            transform.localScale = Vector3.Lerp(transform.localScale, targetScale, scaleSmoothing * Time.deltaTime);
+        }
     }
     
     /// <summary>

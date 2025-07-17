@@ -54,15 +54,26 @@ public class MoveAble : MonoBehaviour
             {
                 Vector2 new_dir = directions[(int)v_direction] * distance;
                 Vector3 new_V3_offset = new Vector3(new_dir.x, new_dir.y, 0f);
-                if(triggerObject != null)
+                if (triggerObject != null)
                     triggerObject.position += new_V3_offset;
                 else
                     transform.position += new_V3_offset;
-
                 isTigger = true;
             }
+
+            other.transform.GetComponent<AudioController>().Scale_flag = false;
         }
 
+    }
+
+
+    void OnCollisionExit2D(Collision2D collision)
+    {
+        if (collision.transform.tag == "Player")
+        {
+            
+            collision.transform.GetComponent<AudioController>().Scale_flag = true;
+        }
     }
 
 }
