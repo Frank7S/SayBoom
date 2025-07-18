@@ -1,16 +1,14 @@
 using System.Collections;
 using UnityEngine;
-using UnityEngine.Events;
-using PoolNamespace; // 假设PoolMgr在全局命名空间
 
 /// <summary>
-/// 发射器：定时从对象池发射指定预制体
+/// 简易发射器：直接实例化public变量指定的Prefab，不用对象池
 /// </summary>
 public class Emitter : MonoBehaviour
 {
     [Header("发射设置")]
-    [Tooltip("发射物Prefab的Resources路径名（如Prefab/Item/breakbrick）")]
-    public string projectilePrefabName = "Prefab/Item/breakbrick";
+    [Tooltip("直接拖拽发射物Prefab")] 
+    public GameObject projectilePrefab;
 
     [Tooltip("发射间隔（秒）")]
     public float fireInterval = 1.0f;
@@ -26,6 +24,7 @@ public class Emitter : MonoBehaviour
 
     [Header("调试")] 
     public bool autoStart = true;
+    [SerializeField] private bool showDebugInfo = true;
 
     private Coroutine fireCoroutine;
 
@@ -38,7 +37,11 @@ public class Emitter : MonoBehaviour
     public void StartFiring()
     {
         if (fireCoroutine == null)
+        {
             fireCoroutine = StartCoroutine(FireLoop());
+            if (showDebugInfo)
+                Debug.Log($"[Emitter] 开始发射，间隔: {fireInterval}秒");
+        }
     }
 
     public void StopFiring()
@@ -47,6 +50,8 @@ public class Emitter : MonoBehaviour
         {
             StopCoroutine(fireCoroutine);
             fireCoroutine = null;
+            if (showDebugInfo)
+                Debug.Log("[Emitter] 停止发射");
         }
     }
 
@@ -61,28 +66,25 @@ public class Emitter : MonoBehaviour
 
     private void FireOnce()
     {
-        PoolMgr.GetInstance().GetObj(projectilePrefabName, (go) =>
+        if (projectilePrefab == null)
         {
-            go.transform.position = transform.position;
-            go.transform.rotation = transform.rotation;
-            go.SetActive(true);
-            Rigidbody2D rb = go.GetComponent<Rigidbody2D>();
-            if (rb != null)
-            {
-                rb.velocity = fireDirection.normalized * fireSpeed;
-            }
-            // 自动回收
-            StartCoroutine(ReleaseAfterTime(go, projectilePrefabName, projectileLifeTime));
-        });
-    }
-
-    private IEnumerator ReleaseAfterTime(GameObject go, string name, float time)
-    {
-        yield return new WaitForSeconds(time);
-        if (go != null && go.activeInHierarchy)
-        {
-            PoolMgr.GetInstance().PushObj(name, go);
+            Debug.LogError("[Emitter] 请在Inspector拖拽发射物Prefab");
+            return;
         }
+        GameObject go = Instantiate(projectilePrefab, transform.position, transform.rotation);
+        Rigidbody2D rb = go.GetComponent<Rigidbody2D>();
+        if (rb != null)
+        {
+            rb.velocity = fireDirection.normalized * fireSpeed;
+            if (showDebugInfo)
+                Debug.Log($"[Emitter] 发射物体，速度: {rb.velocity}");
+        }
+        else
+        {
+            Debug.LogWarning($"[Emitter] 发射物 {go.name} 没有Rigidbody2D组件，无法设置速度");
+        }
+        // 自动销毁
+        Destroy(go, projectileLifeTime);
     }
 
     // Inspector调试用
@@ -90,5 +92,15 @@ public class Emitter : MonoBehaviour
     public void TestFireOnce()
     {
         FireOnce();
+    }
+
+    void OnDrawGizmosSelected()
+    {
+        // 绘制发射方向
+        Gizmos.color = Color.red;
+        Gizmos.DrawRay(transform.position, fireDirection.normalized * 2f);
+        // 绘制发射器位置
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawWireSphere(transform.position, 0.2f);
     }
 } 
