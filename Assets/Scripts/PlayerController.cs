@@ -23,7 +23,7 @@ public class PlayerController : MonoBehaviour
     [Header("地面检测")]
     public Transform groundCheck;
     public float groundCheckRadius = 0.2f;
-    public LayerMask groundLayerMask = 1<<6;
+    public LayerMask groundLayerMask = 1<<6 | 1<<7; 
 
     [Header("调试")]
     public bool showDebugInfo = true;
@@ -334,7 +334,7 @@ public class PlayerController : MonoBehaviour
     {
         if (isJumping)
         {
-            Collider2D ground =Physics2D.OverlapCircle(_virtual_foot.transform.position, 0.1f, 1 << 6);
+            Collider2D ground =Physics2D.OverlapCircle(_virtual_foot.transform.position, 0.1f, (1 << 6 )| (1 << 7));
             if (ground)
             {
                 isJumping = false;
