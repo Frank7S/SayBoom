@@ -64,26 +64,29 @@ public class AudioController : MonoBehaviour
     /// </summary>
     void HandleAudioScaling()
     {
+        float _scaleMultiplier = 1f;
+        
         if (audioSource != null && audioSource.isPlaying && UI_control_flag)
         {
             // 获取音频频谱数据
             AudioListener.GetSpectrumData(audioSpectrum, 0, fftWindow);
-            
+
             // 计算音频强度（取前几个频段的平均值）
             float audioLevel = 0f;
             int frequencyBands = Mathf.Min(64, sampleSize); // 只取前64个频段
-            
+
             for (int i = 0; i < frequencyBands; i++)
             {
                 audioLevel += audioSpectrum[i];
             }
-            
+
             audioLevel /= frequencyBands;
-            
+
             // 将音频级别转换为缩放因子
             float scaleMultiplier = 1f + (audioLevel * scaleSensitivity);
             scaleMultiplier = Mathf.Clamp(scaleMultiplier, minScale, maxScale);
-            
+            _scaleMultiplier = scaleMultiplier;
+
             // 设置目标缩放
             targetScale = originalScale * scaleMultiplier;
 
@@ -116,9 +119,9 @@ public class AudioController : MonoBehaviour
         }
 
         // 平滑过渡到目标缩放
-        if (Scale_flag) {
+        if (Scale_flag || (!Scale_flag && _scaleMultiplier < 1f))
             transform.localScale = Vector3.Lerp(transform.localScale, targetScale, scaleSmoothing * Time.deltaTime);
-        }
+
     }
     
     /// <summary>
