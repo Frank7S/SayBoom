@@ -21,7 +21,7 @@ public class MoveAble : MonoBehaviour
     public Direction v_direction;
 
     [Header("移动位置")]
-    [Range(1f, 6f)]
+    [Range(0f, 6f)]
     public float distance;
     private bool isTigger = false;
 
