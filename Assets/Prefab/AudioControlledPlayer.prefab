@@ -9,7 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3430936735509479982}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Virtual foot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -44,7 +44,7 @@ GameObject:
   - component: {fileID: 983005278194087698}
   - component: {fileID: 5277329072646475566}
   - component: {fileID: 7986199263801849861}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: AudioControlledPlayer
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -137,6 +137,7 @@ MonoBehaviour:
   autoSetupPhysics: 1
   rigidbody: {fileID: 0}
   gravity: 5
+  Size: 0
 --- !u!61 &5277329072646475566
 BoxCollider2D:
   m_ObjectHideFlags: 0

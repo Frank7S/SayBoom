@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 6722013579000479775}
   - component: {fileID: 1779348241685250491}
   - component: {fileID: 4499637435931073464}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: trigger
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -104,7 +104,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4920707066964472426}
   - component: {fileID: 1076776724117229845}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: UPpuzzle
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -193,7 +193,7 @@ GameObject:
   - component: {fileID: 2978038861590990502}
   - component: {fileID: 6850714724145516757}
   - component: {fileID: 1476457069248366494}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Square (1)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -334,7 +334,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8941402397112374038}
   - component: {fileID: 3062868324527523368}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: GameObject
   m_TagString: Untagged
   m_Icon: {fileID: 0}

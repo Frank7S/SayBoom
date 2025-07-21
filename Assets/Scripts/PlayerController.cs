@@ -25,7 +25,7 @@ public class PlayerController : MonoBehaviourPun
     [Header("地面检测")]
     public Transform groundCheck;
     public float groundCheckRadius = 0.2f;
-    public LayerMask groundLayerMask = 1<<6 | 1<<7; 
+    public LayerMask groundLayerMask = 1 << 6 | 1 << 7 | 1 << 8; 
 
     [Header("调试")]
     public bool showDebugInfo = true;
