@@ -1,12 +1,14 @@
 using Unity.Collections;
 using Unity.VisualScripting;
 using UnityEngine;
+using Photon.Pun;
+using Photon.Realtime;
 
 /// <summary>
 /// 玩家操作控制器 - 马里奥式跳跃系统
 /// 负责处理玩家的水平移动、跳跃和重力
 /// </summary>
-public class PlayerController : MonoBehaviour
+public class PlayerController : MonoBehaviourPun
 {
     [Header("移动设置")]
     public float moveSpeed = 5f;
@@ -91,6 +93,7 @@ public class PlayerController : MonoBehaviour
 
     void FixedUpdate()
     {
+        if (!photonView.IsMine) return;
         HandleMovement();
         HandleJump();
         ApplyGravity();
